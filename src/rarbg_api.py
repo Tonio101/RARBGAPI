@@ -4,7 +4,7 @@ import time
 
 from models import RarbgFile, TorrentType
 
-REQUESTS_RETRY = 10
+REQUESTS_RETRY = 20
 # Docs: https://torrentapi.org/apidocs_v2.txt
 TORRENT_API_HOST = "https://torrentapi.org/pubapi_v2.php"
 
@@ -72,7 +72,18 @@ class RarbgApi(object):
             print("Token expired")
             self.token_expired = True
             return None
+        elif response.status_code == 429:
+            data = response.json()
+            # print(data)
+            if data['error_code'] == 20 and data['rate_limit'] == 1:
+                time.sleep(2)
+            return None
+        elif response.status_code == 520:
+            # torrentapi.org | 520: Web server is returning an unknown error
+            time.sleep(1)
+            return None
         else:
+            print(response.text)
             print("Torrent request failed with code:", response.status_code)
             return None
 

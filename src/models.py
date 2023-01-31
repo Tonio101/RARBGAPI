@@ -56,7 +56,7 @@ class RarbgFile(object):
         return self.raw_title
 
     def __str__(self) -> str:
-        return ("{}\t{}\tSeeders[{}]\tLeechers[{}]\tSize[{}]").format(
+        return ("{0} {1: <50} Seeders[{2}] Leechers[{3}] Size[{4}]").format(
             self.pubdate,
             self.title,
             self.seeders,

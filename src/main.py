@@ -12,7 +12,7 @@ def print_torrents(args, torrents):
         for entry in torrents[type]:
             if (entry.is_good_quality()):
                 i = i + 1
-                print("{}. {}".format(i, entry))
+                print("{0: <3} {1}".format(i, entry))
     else:
         for k, v in torrents.items():
             print("File Type: {}".format(k.value))
