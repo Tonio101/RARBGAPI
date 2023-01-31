@@ -8,8 +8,11 @@ from models import get_torrent_type
 def print_torrents(args, torrents):
     if args.torrent_type:
         type = get_torrent_type(args.torrent_type)
+        i = 0
         for entry in torrents[type]:
-            print(entry.get_title())
+            if (entry.is_good_quality()):
+                i = i + 1
+                print("{}. {}".format(i, entry))
     else:
         for k, v in torrents.items():
             print("File Type: {}".format(k.value))
