@@ -5,19 +5,25 @@ from rarbg_api import RarbgApi
 from models import get_torrent_type
 
 
-def print_torrents(args, torrents):
+def get_torrent_list(args, torrents) -> dict:
+    torrent_list = dict()
+
+    i = 0
     if args.torrent_type:
         type = get_torrent_type(args.torrent_type)
-        i = 0
         for entry in torrents[type]:
             if (entry.is_good_quality()):
                 i = i + 1
                 print("{0: <3} {1}".format(i, entry))
+                torrent_list[i] = entry
     else:
         for k, v in torrents.items():
             print("File Type: {}".format(k.value))
             for entry in v:
-                print(entry.get_title())
+                print(entry)
+                torrent_list[i] = entry
+
+    return torrent_list
 
 
 def main(argv):
@@ -56,7 +62,13 @@ def main(argv):
         print("Failed to get torrents, try again later")
         exit(1)
 
-    print_torrents(args=args, torrents=torrents)
+    torrent_list = get_torrent_list(args=args, torrents=torrents)
+    selection = input("Select a number to get torrent link or cancel[c]: ")
+    if 'c' == selection:
+        exit(0)
+
+    print(torrent_list[int(selection)])
+    print(torrent_list[int(selection)].get_download())
 
 
 if __name__ == '__main__':

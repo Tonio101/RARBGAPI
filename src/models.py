@@ -44,6 +44,9 @@ class RarbgFile(object):
 
     def bytes_to_gb(self, bytes) -> float:
         return round((bytes / (1024**3)), 2)
+    
+    def get_download(self) -> str:
+        return self.download
 
     def get_santized_title(self) -> str:
         if self.type == TorrentType.RARBG_TYPE:
