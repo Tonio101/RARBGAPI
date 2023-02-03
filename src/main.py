@@ -20,7 +20,8 @@ def get_torrent_list(args, torrents) -> dict:
         for k, v in torrents.items():
             print("File Type: {}".format(k.value))
             for entry in v:
-                print(entry)
+                i = i + 1
+                print("{0: <3} {1}".format(i, entry))
                 torrent_list[i] = entry
 
     return torrent_list
