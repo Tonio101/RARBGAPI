@@ -2,6 +2,9 @@ import re
 
 from enum import Enum
 
+from logger import Logger
+log = Logger.getInstance().getLogger()
+
 
 class TorrentType(Enum):
     DEFAULT = "DEFAULT"
@@ -44,7 +47,19 @@ class RarbgFile(object):
 
     def bytes_to_gb(self, bytes) -> float:
         return round((bytes / (1024**3)), 2)
-    
+
+    def get_seeders(self) -> int:
+        return self.seeders
+
+    def get_leechers(self) -> int:
+        return self.leechers
+
+    def get_size_gb(self) -> float:
+        return self.bytes_to_gb(self.size)
+
+    def get_date(self) -> str:
+        return self.pubdate
+
     def get_download(self) -> str:
         return self.download
 

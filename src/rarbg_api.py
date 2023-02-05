@@ -3,6 +3,8 @@ import platform
 import time
 
 from models import RarbgFile, TorrentType
+from logger import Logger
+log = Logger.getInstance().getLogger()
 
 REQUESTS_RETRY = 20
 # Docs: https://torrentapi.org/apidocs_v2.txt
@@ -31,18 +33,18 @@ class RarbgApi(object):
             'app_id': self.app_id,
             'get_token': 'get_token'
         }
-        print(self.app_id)
+        log.info(self.app_id)
         response = requests.get(url=self.api, params=params)
 
         if response.status_code == 200:
             data = response.json()
-            print("Token {}".format(
+            log.info("Token {}".format(
                 data
             ))
             self.token = data['token']
             self.token_expired = False
         else:
-            print("Request failed with status code:", response.status_code)
+            log.info("Request failed with status code:", response.status_code)
 
     def __get_torrents(self, sort='seeders',
                        category='movies', limit=100) -> dict:
@@ -64,17 +66,17 @@ class RarbgApi(object):
         if response.status_code == 200:
             data = response.json()
             torrent_files = data['torrent_results']
-            print("Size of torrent list: {}".format(len(torrent_files)))
+            log.info("Size of torrent list: {}".format(len(torrent_files)))
             for torrent_file in torrent_files:
                 rarbg_file = RarbgFile(torrent_file)
                 rarbg_file_dict[rarbg_file.get_type()].append(rarbg_file)
         elif response.status_code == 401:
-            print("Token expired")
+            log.info("Token expired")
             self.token_expired = True
             return None
         elif response.status_code == 429:
             data = response.json()
-            # print(data)
+            # log.info(data)
             if data['error_code'] == 20 and data['rate_limit'] == 1:
                 time.sleep(2)
             return None
@@ -83,8 +85,8 @@ class RarbgApi(object):
             time.sleep(1)
             return None
         else:
-            print(response.text)
-            print("Torrent request failed with code:", response.status_code)
+            log.info(response.text)
+            log.info("Torrent request failed with code:", response.status_code)
             return None
 
         return rarbg_file_dict
@@ -93,7 +95,7 @@ class RarbgApi(object):
         result = None
 
         for i in range(REQUESTS_RETRY):
-            print("Making request attempt {}".format(i))
+            log.info("Making request attempt {}".format(i))
             result = self.get_torrents_rate_limited()
             if result:
                 break
@@ -103,8 +105,11 @@ class RarbgApi(object):
     def get_torrents_rate_limited(self, sort='seeders',
                                   category='movies', limit=100) -> dict:
         current_time = time.time()
-        if current_time - self.last_request_time < 0.5:
-            time.sleep(0.5 - (current_time - self.last_request_time))
+        if current_time - self.last_request_time < 2:
+            log.info("Request sent {} sec ago, ratelimit".format(
+                current_time - self.last_request_time
+            ))
+            time.sleep(5)
         self.last_request_time = time.time()
 
         if self.token_expired:

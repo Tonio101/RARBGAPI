@@ -2,11 +2,16 @@ import argparse
 import sys
 
 from rarbg_api import RarbgApi
+from prettytable import PrettyTable
 from models import get_torrent_type
 
 
-def get_torrent_list(args, torrents) -> dict:
-    torrent_list = dict()
+from logger import Logger
+log = Logger.getInstance().getLogger()
+
+
+def get_torrent_dict(args, torrents) -> dict:
+    torrent_dict = dict()
 
     i = 0
     if args.torrent_type:
@@ -14,17 +19,36 @@ def get_torrent_list(args, torrents) -> dict:
         for entry in torrents[type]:
             if (entry.is_good_quality()):
                 i = i + 1
-                print("{0: <3} {1}".format(i, entry))
-                torrent_list[i] = entry
+                log.debug("{0: <3} {1}".format(i, entry))
+                torrent_dict[i] = entry
     else:
         for k, v in torrents.items():
-            print("File Type: {}".format(k.value))
+            log.debug("File Type: {}".format(k.value))
             for entry in v:
                 i = i + 1
-                print("{0: <3} {1}".format(i, entry))
-                torrent_list[i] = entry
+                log.debug("{0: <3} {1}".format(i, entry))
+                torrent_dict[i] = entry
 
-    return torrent_list
+    return torrent_dict
+
+
+def print_table(torrent_dict: dict) -> None:
+    table = PrettyTable(["No.", "Title", "Seeders",
+                        "Leechers", "Size (GB)", "Date"])
+    for i, entry in torrent_dict.items():
+        table.add_row([
+            i,
+            entry.get_title(),
+            entry.get_seeders(),
+            entry.get_leechers(),
+            entry.get_size_gb(),
+            entry.get_date()
+        ])
+
+    table._align["No."] = "l"
+    table._align["Title"] = "l"
+
+    print(table)
 
 
 def main(argv):
@@ -56,20 +80,28 @@ def main(argv):
     #                     required=False)
     args = parser.parse_args()
 
+    log.info('This is a test meesage')
+
     client = RarbgApi()
     torrents = client.get_torrents()
 
     if torrents is None:
-        print("Failed to get torrents, try again later")
+        log.info("Failed to get torrents, try again later")
         exit(1)
 
-    torrent_list = get_torrent_list(args=args, torrents=torrents)
-    selection = input("Select a number to get torrent link or cancel[c]: ")
-    if 'c' == selection:
+    torrent_dict = get_torrent_dict(args=args, torrents=torrents)
+    print_table(torrent_dict)
+    torrent_input = input("Select a number to get torrent link or cancel[c]: ")
+    if 'c' == torrent_input:
         exit(0)
 
-    print(torrent_list[int(selection)])
-    print(torrent_list[int(selection)].get_download())
+    if not isinstance(torrent_input, int):
+        log.error("Invalid input, expected an integer value")
+        exit(1)
+
+    selection = int(torrent_input)
+    if selection in torrent_dict:
+        print(torrent_dict[int(selection)].get_download())
 
 
 if __name__ == '__main__':
