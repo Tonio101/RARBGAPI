@@ -116,13 +116,13 @@ def main(argv):
     if 'c' == torrent_input:
         exit(0)
 
-    if not isinstance(torrent_input, int):
-        log.error("Invalid input, expected an integer value")
+    try:
+        selection = int(torrent_input)
+        if selection in torrent_dict:
+            print(torrent_dict[int(selection)].get_download())
+    except Exception as ex:
+        log.error(ex)
         exit(1)
-
-    selection = int(torrent_input)
-    if selection in torrent_dict:
-        print(torrent_dict[int(selection)].get_download())
 
 
 if __name__ == '__main__':
