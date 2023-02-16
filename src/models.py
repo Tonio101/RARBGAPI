@@ -1,6 +1,7 @@
 import re
 
 from enum import Enum
+from datetime import datetime
 
 from logger import Logger
 log = Logger.getInstance().getLogger()
@@ -32,6 +33,7 @@ class RarbgFile(object):
         self.leechers = raw_dict['leechers']
         self.size = raw_dict['size']
         self.pubdate = raw_dict['pubdate']
+        self.pubdate_ts = self.get_pubdate_ts()
         self.episode_info = raw_dict['episode_info']
         self.ranked = raw_dict['ranked']
         self.info_page = raw_dict['info_page']
@@ -60,8 +62,20 @@ class RarbgFile(object):
     def get_date(self) -> str:
         return self.pubdate
 
+    def get_pubdate_str(self) -> str:
+        return self.date_object.strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_pubdate_obj(self) -> datetime:
+        return self.date_object
+
     def get_download(self) -> str:
         return self.download
+
+    def get_pubdate_ts(self) -> int:
+        date_object = \
+            datetime.strptime(self.pubdate, '%Y-%m-%d %H:%M:%S %z')
+        self.date_object = date_object
+        return date_object.timestamp()
 
     def get_santized_title(self) -> str:
         if self.type == TorrentType.RARBG_TYPE:
